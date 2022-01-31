@@ -1,14 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Box, Modal, Typography } from '@mui/material';
-import { IFilm, IPeople, ISpecie, IStarship, People } from 'swapi-ts';
+
+import { useDataContext } from './dataContext';
 
 interface PeopleDetailsModalProps {
   isOpen: boolean;
-  onClose(): void;
-  selectedName: string;
-  species: ISpecie[];
-  movies: IFilm[];
-  starships: IStarship[];
 }
 
 const style = {
@@ -23,32 +19,19 @@ const style = {
   p: 4,
 };
 
-export const PeopleDetailsModal: React.FC<PeopleDetailsModalProps> = ({
-  isOpen,
-  onClose,
-  selectedName,
-  species,
-  movies,
-  starships,
-}) => {
-  const [selectedPeople, setSelectedPeople] = useState<IPeople | null>(null);
-
-  useEffect(() => {
-    People.find((x) => x.name === selectedName).then((x) => {
-      setSelectedPeople(x.resources[0].value);
-    });
-  }, [selectedName]);
+export const PeopleDetailsModal: React.FC<PeopleDetailsModalProps> = ({ isOpen }) => {
+  const { films, species, starships, selectedPerson, onToggleSelectedPerson } = useDataContext();
 
   const peopleSpecies =
-    selectedPeople?.species.map((x) => species.find((s) => s.url === x)?.name ?? '-').join(' , ') ??
+    selectedPerson?.species.map((x) => species.find((s) => s.url === x)?.name ?? '-').join(' , ') ??
     '-';
 
   const peopleMovies =
-    selectedPeople?.films.map((x) => movies.find((s) => s.url === x)?.title ?? '-').join(' , ') ??
+    selectedPerson?.films.map((x) => films.find((s) => s.url === x)?.title ?? '-').join(' , ') ??
     '-';
 
   const peopleSpaceships =
-    selectedPeople?.starships
+    selectedPerson?.starships
       .map((x) => starships.find((s) => s.url === x)?.name ?? '-')
       .join(' , ') ?? '-';
 
@@ -57,11 +40,11 @@ export const PeopleDetailsModal: React.FC<PeopleDetailsModalProps> = ({
       aria-describedby='modal-modal-description'
       aria-labelledby='modal-modal-title'
       open={isOpen}
-      onClose={onClose}
+      onClose={() => onToggleSelectedPerson(null)}
     >
       <Box sx={style}>
         <Typography variant='body1'>
-          Name: <span>{selectedPeople?.name}</span>
+          Name: <span>{selectedPerson?.name}</span>
         </Typography>
         <Typography>
           Species: <span>{peopleSpecies}</span>
